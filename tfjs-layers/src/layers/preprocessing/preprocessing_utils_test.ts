@@ -52,7 +52,7 @@ describeMathCPUAndGPU('Tests for preprocessing utils', () => {
     which would result in output rank ${inputs.rank}.`);
   });
 
-  it('Thows an error if idfWeights are not supplied for tfIdf', () => {
+  it('Thows an error if weights are not supplied for tfIdf', () => {
     const inputs = tensor([0, 1, 1, 2, 2, 2]);
     expect(() =>utils.encodeCategoricalInputs(inputs, utils.tfIdf, 4)).
     toThrowError(`When outputMode is 'tfIdf', idfWeights must be provided.`);
