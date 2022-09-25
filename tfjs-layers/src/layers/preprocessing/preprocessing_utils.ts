@@ -74,7 +74,7 @@ export function encodeCategoricalInputs(inputs: Tensor|Tensor[],
 
   if(weights === null || weights === undefined) {
     throw new ValueError(
-      `When outputMode is 'tfIdf', idfWeights must be provided.`
+      `When outputMode is 'tfIdf', weights must be provided.`
       );
   } else {
 
