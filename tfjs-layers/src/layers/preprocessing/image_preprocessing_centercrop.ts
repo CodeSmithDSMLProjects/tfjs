@@ -6,6 +6,9 @@ import { Kwargs } from '../../types';
 
 
 
+
+
+
 import * as K from '../../backend/tfjs_backend';
 
 const h_axis = -3
@@ -31,12 +34,15 @@ export class CenterCrop extends Layer {
     let w_diff = inputShape[w_axis] - this.width
 
 
+
     function centercrop(){
       let h_start = K.cast(h_diff/2 , "float32") //issue with tensor rank
       let w_start = K.cast(w_diff/2, 'float32')
 
       return crop_to_bounding_box(inputs, h_start, w_start, this.height, width)
     }
+
+
 
 
 
