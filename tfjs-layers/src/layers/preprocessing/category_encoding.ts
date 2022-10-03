@@ -71,45 +71,45 @@ export class CategoryEncoding extends Layer {
   call(inputs: Tensor|Tensor[], kwargs: Kwargs): Tensor[]|Tensor {
     return tidy(() => {
 
-      inputs = getExactlyOneTensor(inputs);
-      if(inputs.dtype !== 'int32') {
-        inputs = K.cast(inputs, 'int32');
-    }
+        inputs = getExactlyOneTensor(inputs);
+        if(inputs.dtype !== 'int32') {
+          inputs = K.cast(inputs, 'int32');
+      }
 
-       let countWeights: Tensor1D | Tensor2D;
+        let countWeights: Tensor1D | Tensor2D;
 
-      if((typeof kwargs['countWeights']) !== 'undefined') {
+        if((typeof kwargs['countWeights']) !== 'undefined') {
 
-        if(this.outputMode !== 'count') {
-          throw new ValueError(
-            `countWeights is not used when outputMode !== count.
-             Received countWeights=${kwargs['countWeights']}`);
-        }
-         const countWeightsRanked = getExactlyOneTensor(kwargs['countWeights']);
-
-         if(countWeightsRanked.rank === 1) {
-           countWeights = countWeightsRanked as Tensor1D;
-         } if(countWeightsRanked.rank === 2) {
-           countWeights = countWeightsRanked as Tensor2D;
+          if(this.outputMode !== 'count') {
+            throw new ValueError(
+              `countWeights is not used when outputMode !== count.
+              Received countWeights=${kwargs['countWeights']}`);
           }
-      }
+          const countWeightsArg = getExactlyOneTensor(kwargs['countWeights']);
 
-      const maxValue = max(inputs);
-      const minValue = min(inputs);
-      const greaterEqualMax = greater(this.numTokens, maxValue)
-                                                  .bufferSync().get(0);
+          if(countWeightsArg.rank === 1) {
+            countWeights = countWeightsArg as Tensor1D;
+          } if(countWeightsArg.rank === 2) {
+            countWeights = countWeightsArg as Tensor2D;
+            }
+        }
 
-      const greaterMin = greaterEqual(minValue, 0).bufferSync().get(0);
+        const maxValue = max(inputs);
+        const minValue = min(inputs);
+        const greaterEqualMax = greater(this.numTokens, maxValue)
+                                                    .bufferSync().get(0);
 
-      if(!(greaterEqualMax && greaterMin)) {
+        const greaterMin = greaterEqual(minValue, 0).bufferSync().get(0);
 
-        throw new ValueError(
-        `Input values must be between 0 < values <= numTokens
-        with numTokens=${this.numTokens}`);
-      }
+        if(!(greaterEqualMax && greaterMin)) {
 
-    return utils.encodeCategoricalInputs(inputs,
-      this.outputMode, this.numTokens, countWeights);
+          throw new ValueError(
+          `Input values must be between 0 < values <= numTokens
+          with numTokens=${this.numTokens}`);
+        }
+
+        return utils.encodeCategoricalInputs(inputs,
+          this.outputMode, this.numTokens, countWeights);
     });
   }
 }
