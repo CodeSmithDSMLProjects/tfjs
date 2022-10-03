@@ -12,7 +12,6 @@ import { describeMathCPUAndGPU, expectTensorsClose} from '../../utils/test_utils
 import { Tensor, tensor} from '@tensorflow/tfjs-core';
 import { CategoryEncoding } from './category_encoding';
 
-
 describeMathCPUAndGPU('Category Encoding', () => {
 
    it('Calculates correct output for Count outputMode rank 0', () => {
@@ -137,7 +136,8 @@ describeMathCPUAndGPU('Category Encoding', () => {
     const encodingLayer = new CategoryEncoding({numTokens,
                                         outputMode: 'multiHot'});
     expect(() => encodingLayer.apply(categoryData))
-    .toThrowError(`Input values must be between 0 < values <= numTokens`);
+    .toThrowError(`Input values must be between 0 < values <= numTokens
+        with numTokens=${numTokens}`);
   });
 
   it('Raises Value Error if min input value < 0', () => {
@@ -146,6 +146,7 @@ describeMathCPUAndGPU('Category Encoding', () => {
     const encodingLayer = new CategoryEncoding({numTokens,
                                         outputMode: 'multiHot'});
     expect(() => encodingLayer.apply(categoryData))
-    .toThrowError(`Input values must be between 0 < values <= numTokens`);
+    .toThrowError(`Input values must be between 0 < values <= numTokens
+        with numTokens=${numTokens}`);
   });
 });

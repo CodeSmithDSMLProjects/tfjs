@@ -19,7 +19,6 @@ import * as K from '../../backend/tfjs_backend';
 import * as utils from './preprocessing_utils';
 import { OutputMode } from './preprocessing_utils';
 
-
 export declare interface CategoryEncodingArgs extends LayerArgs {
   numTokens: number;
   outputMode?: OutputMode;
@@ -106,7 +105,7 @@ export class CategoryEncoding extends Layer {
 
         throw new ValueError(
         `Input values must be between 0 < values <= numTokens
-          with numTokens=${this.numTokens}`);
+        with numTokens=${this.numTokens}`);
       }
 
     return utils.encodeCategoricalInputs(inputs,
