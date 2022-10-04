@@ -12,7 +12,7 @@ import { describeMathCPUAndGPU, expectTensorsClose} from '../../utils/test_utils
 import { Tensor, tensor, tensor1d} from '@tensorflow/tfjs-core';
 import * as utils from './preprocessing_utils';
 
-describeMathCPUAndGPU('Tests for preprocessing utils', () => {
+describeMathCPUAndGPU('Preprocessing Utils', () => {
 
   it('Peforms int encoding correctly', () => {
     const inputs = tensor([0, 1, 2], [3], 'int32');
@@ -57,7 +57,7 @@ describeMathCPUAndGPU('Tests for preprocessing utils', () => {
   it('Thows an error if input rank > 2', () => {
     const inputs = tensor([[[1], [2]], [[3], [1]]]);
     expect(() =>utils.encodeCategoricalInputs(inputs, 'multiHot', 4))
-    .toThrowError(`When outputMode is not 'int', maximum output rank is 2`
+    .toThrowError(`When outputMode is not int, maximum output rank is 2`
     + ` Received outputMode ${'multiHot'} and input shape ${inputs.shape}`
     + ` which would result in output rank ${inputs.rank}.`);
   });
