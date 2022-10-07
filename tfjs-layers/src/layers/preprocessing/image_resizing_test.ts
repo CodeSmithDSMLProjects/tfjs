@@ -17,7 +17,7 @@ import {image, Rank, Tensor, tensor, zeros, range, reshape} from '@tensorflow/tf
 // import {Shape} from '../../keras_format/common';
 import {describeMathCPUAndGPU, expectTensorsClose} from '../../utils/test_utils';
 
-import {Resizing} from './image_resizing';
+import {Resizing, ResizingArgs} from './image_resizing';
 
 describeMathCPUAndGPU('Resizing Layer', () => {
   it('Check if output shape matches specifications', () => {
@@ -110,7 +110,7 @@ describeMathCPUAndGPU('Resizing Layer', () => {
     const incorrectArgs = {height, width, interpolation};
     const expectedError =
         `Invalid interpolation parameter: ${interpolation} is not implemented`;
-    expect(() => new Resizing(incorrectArgs)).toThrowError(expectedError);
+    expect(() => new Resizing(incorrectArgs as ResizingArgs)).toThrowError(expectedError);
   });
 
   it('Config holds correct name', () => {
