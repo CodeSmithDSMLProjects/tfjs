@@ -145,6 +145,9 @@ import {resizeBilinearConfig} from './kernels/ResizeBilinear';
 import {resizeBilinearGradConfig} from './kernels/ResizeBilinearGrad';
 import {resizeNearestNeighborConfig} from './kernels/ResizeNearestNeighbor';
 import {resizeNearestNeighborGradConfig} from './kernels/ResizeNearestNeighborGrad';
+import {resizeBicubicConfig} from './kernels/ResizeBicubic';
+// import {resizeBicubicGradConfig} from './kernels/ResizeBicubic';
+
 import {reverseConfig} from './kernels/Reverse';
 import {rotateWithOffsetConfig} from './kernels/RotateWithOffset';
 import {roundConfig} from './kernels/Round';
@@ -314,6 +317,7 @@ const kernelConfigs: KernelConfig[] = [
   reshapeConfig,
   resizeBilinearConfig,
   resizeBilinearGradConfig,
+  resizeBicubicConfig,
   resizeNearestNeighborConfig,
   resizeNearestNeighborGradConfig,
   reverseConfig,
