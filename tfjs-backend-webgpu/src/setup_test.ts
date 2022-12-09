@@ -37,7 +37,6 @@ const TEST_FILTERS: TestFilter[] = [
     startsWith: 'abs ',
     excludes: [
       'complex64',  // Kernel 'ComplexAbs' not registered.
-      'gradient',   // Step kernel not yet implemented.
     ]
   },
   {
@@ -252,7 +251,6 @@ const TEST_FILTERS: TestFilter[] = [
       'diag ',
       'dilation2d ',
       'encodeWeights ',
-      'linspace ',
       'localResponseNormalization ',
       'maxPool3d ',
       'maxPool3dBackprop ',
@@ -268,8 +266,6 @@ const TEST_FILTERS: TestFilter[] = [
       'sparseReshape ',
       'sparseSegmentMean ',
       'sparseSegmentSum ',
-      'step kernel',
-      'gradients: relu6',  // Step
       'stringSplit ',
       'stringToHashBucketFast ',
       'unique ',

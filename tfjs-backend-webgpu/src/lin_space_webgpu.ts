@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2019 Google LLC. All Rights Reserved.
+ * Copyright 2022 Google LLC.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,47 +15,36 @@
  * =============================================================================
  */
 
-import {getUnaryOpString, UnaryOpType} from './unary_op_util';
 import {getMainHeaderString as main, WebGPUProgram} from './webgpu_program';
 import {computeDispatch, flatDispatchLayout} from './webgpu_util';
 
-export class UnaryOpProgram implements WebGPUProgram {
-  outputShape: number[];
+export class LinSpaceProgram implements WebGPUProgram {
+  variableNames: string[] = [];
+  outputShape: number[] = [];
   shaderKey: string;
   dispatchLayout: {x: number[]};
   dispatch: [number, number, number];
-  variableNames = ['A'];
-  workgroupSize: [number, number, number];
-  op: UnaryOpType;
-  uniforms?: string;
+  uniforms = 'start : f32, step : f32,';
+  workgroupSize: [number, number, number] = [64, 1, 1];
   size = true;
 
-  constructor(outputShape: number[], op: UnaryOpType, uniforms = '') {
-    // TODO(jiajia.qin@intel.com): Heuristically select a good work group size.
-    const workgroupSizeX = 128;
-    this.workgroupSize = [workgroupSizeX, 1, 1];
-    this.outputShape = outputShape;
+  constructor(shape: number) {
+    this.outputShape = [shape];
     this.dispatchLayout = flatDispatchLayout(this.outputShape);
     this.dispatch = computeDispatch(
         this.dispatchLayout, this.outputShape, this.workgroupSize);
-    this.op = op;
-    if (uniforms !== '') {
-      this.uniforms = uniforms;
-    }
-    this.shaderKey = `unary_${op}`;
+
+    this.shaderKey = 'linSpace';
   }
 
   getUserCode(): string {
-    return `
-      fn unaryOperation(a : f32) -> f32 {
-        ${getUnaryOpString(this.op, false)}
-      }
+    const userCode = `
       ${main('index')} {
         if (index < uniforms.size) {
-          let a = getAByOutputIndex(index);
-          setOutputAtIndex(index, unaryOperation(a));
+          setOutputAtIndex(index, uniforms.start + f32(index) * uniforms.step);
         }
       }
-      `;
+    `;
+    return userCode;
   }
 }

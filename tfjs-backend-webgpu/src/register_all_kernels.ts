@@ -79,6 +79,7 @@ import {isNaNConfig} from './kernels/IsNaN';
 import {leakyReluConfig} from './kernels/LeakyRelu';
 import {lessConfig} from './kernels/Less';
 import {lessEqualConfig} from './kernels/LessEqual';
+import {linSpaceConfig} from './kernels/LinSpace';
 import {logConfig} from './kernels/Log';
 import {log1pConfig} from './kernels/Log1p';
 import {logicalAndConfig} from './kernels/LogicalAnd';
@@ -134,6 +135,7 @@ import {splitVConfig} from './kernels/SplitV';
 import {sqrtConfig} from './kernels/Sqrt';
 import {squareConfig} from './kernels/Square';
 import {squaredDifferenceConfig} from './kernels/SquaredDifference';
+import {stepConfig} from './kernels/Step';
 import {stridedSliceConfig} from './kernels/StridedSlice';
 import {stringNGramsConfig} from './kernels/StringNGrams';
 import {subConfig} from './kernels/Sub';
@@ -212,6 +214,7 @@ const kernelConfigs: KernelConfig[] = [
   leakyReluConfig,
   lessConfig,
   lessEqualConfig,
+  linSpaceConfig,
   log1pConfig,
   logConfig,
   logicalAndConfig,
@@ -259,6 +262,7 @@ const kernelConfigs: KernelConfig[] = [
   sinConfig,
   sinhConfig,
   sliceConfig,
+  stepConfig,
   stridedSliceConfig,
   stringNGramsConfig,
   softmaxConfig,
