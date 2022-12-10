@@ -21,8 +21,21 @@ import {ALL_ENVS, describeWithFlags} from '../../jasmine_util';
 
 describeWithFlags('resizeBicubic', ALL_ENVS, () => {
   it('simple alignCorners=false', async () => {
-    const input = tf.tensor3d([2,2,2,4,4,4], [2, 3, 1]);
+    const input = tf.tensor4d([2,2,2,
+                               1,1,1,
+                               3,3,3], [1, 3, 3, 1]);
+
+
+                                [0,0,0,0,0,0,0,
+                                 0,0,0,0,0,0,0,
+                                 0,0,2,2,2,0,0,
+                                 0,0,1,1,1,0,0,
+                                 0,0,3,3,3,0,0,
+                                 0,0,0,0,0,0,0,
+                                 0,0,0,0,0,0,0]
+
     console.log(`bicubic2 ${tf.image.resizeBicubic(input, [6, 9], false)}`);
+    tf.tensor4d
 
 
   });
