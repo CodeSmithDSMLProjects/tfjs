@@ -50,137 +50,59 @@ export function resizeBicubic(args: {
     return [rowPoint, colPoint]
   }
 
-  function coordinatesToIndex(coord: number[], imagesStrides: number[]) {
-    return (coord[0] * imagesStrides[1]) + coord[1]
+  function coordinatesToIndex(row: number, col:number, imagesStrides: number[]) {
+    return (row * imagesStrides[1]) + col
   }
 
 
-
-
-
   function padInputImage(img: TypedArray): any {
-
-    const pad = 2
-    const imageRows = imagesStrides[0] / imagesStrides[1]
-    const result = new Float32Array(
-      util.sizeFromShape([batch, oldHeight + 4, oldWidth + 4, numChannels]));
-    const paddedStrides = util.computeStrides([batch, oldHeight + (pad*2), oldWidth + pad*2, numChannels])
-    let idx:  number[]
-    let idx2: number
-    let val2:  number
-
-    // pad with zeros
-    for(let i = 0; i < xValues.length; i++) {
-      val2 = xValues[i]
-      idx = indexToCoordinates(i, imagesStrides)
-      idx = [idx[0] + pad, idx[1] + pad]
-      idx2 = coordinatesToIndex(idx, paddedStrides)
-      result[idx2] = val2
+    const pad = 2;
+    const paddedMat = new Float32Array(util.sizeFromShape([batch, oldHeight + pad*2, oldWidth + pad*2, numChannels]));
+    const paddedStrides = util.computeStrides([batch, oldHeight + pad*2, oldWidth + pad*2, numChannels]);
+    const [imgRow, imgCol] = [(imagesStrides[0] / imagesStrides[1]), imagesStrides[1]];
+    const maxLen = paddedMat.length;
+    for (let i = 0; i < maxLen; i++) {
+      const [row, col] = indexToCoordinates(i, paddedStrides);
+      const topRow = 0;
+      const bottomRow = imgRow - 1;
+      const leftCol = 0;
+      const rightCol = imgCol - 1;
+      const currentCol = col - pad;
+      const currentRow = row - pad;
+      if (row < pad) { // case: top
+        if (col < pad) { // case: top left
+          paddedMat[i] = img[coordinatesToIndex(topRow, leftCol, imagesStrides)]; // top left from original img
+        }
+        else if (col > imgCol + pad - 1) { // case: top right
+          paddedMat[i] = img[coordinatesToIndex(topRow, rightCol, imagesStrides)]; // top right from original img
+        }
+        else { // case: top, not corner
+          paddedMat[i] = img[coordinatesToIndex(topRow, currentCol, imagesStrides)]; // top from original img
+        }
+      }
+      else if (row > imgRow + pad - 1) { // case: bottom
+        if (col < pad) { // case: bottom left
+          paddedMat[i] = img[coordinatesToIndex(bottomRow, leftCol, imagesStrides)]; // bottom left from original img
+        }
+        else if (col > imgCol + pad - 1) { // case: bottom right
+          paddedMat[i] = img[coordinatesToIndex(bottomRow, rightCol, imagesStrides)]; // bottom right from original img
+        }
+        else { // case: bottom, not corner
+          paddedMat[i] = img[coordinatesToIndex(bottomRow, currentCol, imagesStrides)]; // bottom of original image
+        }
+      }
+      else if (col < pad) { // case: left
+        paddedMat[i] = img[coordinatesToIndex(currentRow, leftCol, imagesStrides)]; // left of original image
+      }
+      else if (col > imgCol + pad -1) {// case: right
+        paddedMat[i] = img[coordinatesToIndex(currentRow, rightCol, imagesStrides)]; // right of original image
+      }
+      else { // case: center
+        paddedMat[i] = img[coordinatesToIndex(currentRow, currentCol, imagesStrides)]; // original image value
+      }
     }
 
-    // top/bottom rows
-    const topBotIdx = [...Array(imagesStrides[1]).keys()]
-    const topCoords: number[][] = []
-    const botCoords:number[][] = []
-    topBotIdx.forEach(el => {
-      topCoords.push([0, el])
-      botCoords.push([imageRows - 1, el])
-    })
-
-    // left/right cols
-    // drop first and last value (handled by top/bottom)
-    const leftRightIdx = [...Array((imagesStrides[0] / imagesStrides[1])).keys()]
-    const leftCoords: number[][] = []
-    const rightCoords: number[][] = []
-    leftRightIdx.forEach(el => {
-      leftCoords.push([el,0])
-      rightCoords.push([el, imagesStrides[1] - 1, ])
-    })
-
-    // need to get value of image at coordinate
-    // convert it to index
-    // if top row:
-        // keep column same, subtract 1 and 2 from row
-    topCoords.forEach(el => {
-      let idx = coordinatesToIndex(el, imagesStrides)
-      let val = img[idx]
-      let c1 = [0, el[1]+2]
-      let c2 = [1, el[1]+2]
-      console.log('t')
-      console.log(c1)
-      console.log(c2)
-      let c1Idx = coordinatesToIndex(c1, paddedStrides)
-      let c2Idx = coordinatesToIndex(c2, paddedStrides)
-      console.log(c1Idx)
-      console.log(c2Idx)
-      console.log(`val ${val}`)
-      result[c1Idx] = val
-      result[c2Idx] = val
-    })
-
-
-    // if bottom row
-        // keep column same, add 1 and 2 to row
-    botCoords.forEach(el => {
-      let idx = coordinatesToIndex(el, imagesStrides)
-      let val = img[idx]
-      let c1 = [imageRows+pad, el[1]+2]
-      let c2 = [imageRows+pad+1, el[1]+2]
-      console.log('b')
-      console.log(c1)
-      console.log(c2)
-      let c1Idx = coordinatesToIndex(c1, paddedStrides)
-      let c2Idx = coordinatesToIndex(c2, paddedStrides)
-      console.log(c1Idx)
-      console.log(c2Idx)
-      console.log(`val ${val}`)
-      result[c1Idx] = val
-      result[c2Idx] = val
-    })
-    // if left col
-    leftCoords.forEach(el => {
-      let idx = coordinatesToIndex(el, imagesStrides)
-      let val = img[idx]
-      let c1 = [el[0]+2, 0]
-      let c2 = [el[0]+2, 1]
-      console.log('l')
-      console.log(c1)
-      console.log(c2)
-      let c1Idx = coordinatesToIndex(c1, paddedStrides)
-      let c2Idx = coordinatesToIndex(c2, paddedStrides)
-      console.log(c1Idx)
-      console.log(c2Idx)
-      console.log(`val ${val}`)
-      result[c1Idx] = val
-      result[c2Idx] = val
-    })
-
-      //  keep row same subtract 1 and 2 from column
-
-    // if right col
-    rightCoords.forEach(el => {
-      let idx = coordinatesToIndex(el, imagesStrides)
-      let val = img[idx]
-      let c1 = [el[0]+2, imagesStrides[1] + 2]
-      let c2 = [el[0]+2, imagesStrides[1] + 3]
-      console.log('r')
-      console.log(c1)
-      console.log(c2)
-      let c1Idx = coordinatesToIndex(c1, paddedStrides)
-      let c2Idx = coordinatesToIndex(c2, paddedStrides)
-      console.log(c1Idx)
-      console.log(c2Idx)
-      console.log(`val ${val}`)
-      result[c1Idx] = val
-      result[c2Idx] = val
-    })
-
-
-
-
-
-    return result
-
+    return paddedMat;
 
   }
 
@@ -318,4 +240,209 @@ export const resizeBicubicConfig: KernelConfig = {
 //   insertValues(el, pad, img, 'r', paddedStrides)
 // })
 
+
+/*
+  const paddedMat = new Float32Array((height + pad)*(width + pad));
+  imgLen = len(originalImg)
+  const maxLen = len(paddedMat);
+  for (let i = 0; i < maxLen; i++) {
+    row, col = coordinatesToIndex(i, paddedStrides);
+    if (row < pad) {
+      // case: top
+      if (col < pad) {
+        // case: top left
+        paddedMat[i] = originialImg[idxFromLoc(0, 0, inputStrides)]; // top left from original img
+      }
+      else if (col > imgLen + pad - 1) {
+        // case: top right
+        paddedMat[i] = originalImg[idxFromLoc(0, imgLen - 1, inputStrides)]; // top right from original img
+      }
+      else {
+        // case: top, not corner
+        paddedMat[i] = originalImg[idxFromLoc(0, col - pad, inputStrides)]; // top from original img
+      }
+    }
+    else (row > imgLen + pad - 1) {
+      // case: bottom
+      if (col < pad) {
+        // case: bottom left
+        paddedMat[i] = originialImg[idxFromLoc(imgLen - 1, 0, inputStrides)]; // bottom left from original img
+      }
+      else if (col > imgLen + pad - 1) {
+        // case: bottom right
+        paddedMat[i] = originalImg[idxFromLoc(imgLen - 1, imgLen - 1, inputStrides)]; // bottom right from original img
+      }
+      else {
+        // case: bottom, not corner
+        paddedMat[i] = originalImg[idxFromLoc(imgLen - 1, col - pad, inputStrides)]; // bottom of original image
+      }
+    }
+    else if (col < pad) {
+      // left side
+      paddedMat[i] = originalImg[idxFromLoc(row - pad, 0, inputStrides)]; // left of original image
+    }
+    else if (col > imgLen + pad -1) {
+      // right side
+      paddedMat[i] = originalImg[idxFromLoc(row - pad, imgLen - 1, inputStrides)]; // right of original image
+    }
+  }
+*/
+
+
+
+//
+// let output = new Float32Array(
+    //   util.sizeFromShape(
+    //       [batch, newHeight + padSize[0], newWidth + padSize[1], numChannels]
+    //     )
+    //   );
+
+    //   for(let i = 0; i < img.length; i++) {
+    //     if(i == 0) {
+
+
+    //     }
+    //   }
+    // take edge values and expand them outwards to pad
+    // for (let i = 0; i < oldHeight; i++) {
+    //   for (let j = 0; j < oldWidth; j++) {
+
+
+          // if j == 0 // top left corner
+            // for x < pad
+              // for y < pad
+                // output[x][y] = input[i][j]
+          // if j == oldWidth // top right corner
+          // else // top edge, pad upwards
+        // if j == 0
+          // left edge, pad leftward
+        // i == oldHeight
+          // if j == 0 // bottom left corner
+          // if j == oldWidth // bottom right corner
+          // else // bottom edge, pad below
+        // j == oldWidth
+          // right edge, pad right
+
+        // else: central values, output[i][j] = input[i][j]
+          // output[i + pad][j + pad] = input[i][j]
+      // }
+    // }
+
+
+
+
+    // const pad = 2
+    // const imageRows = imagesStrides[0] / imagesStrides[1]
+    // const result = new Float32Array(
+    //   util.sizeFromShape([batch, oldHeight + pad*2, oldWidth + pad*2, numChannels]));
+    // const paddedStrides = util.computeStrides([batch, oldHeight + (pad*2), oldWidth + pad*2, numChannels])
+
+    // let idx: number[]
+    // let idx2: number
+    // let val2: number
+
+    // // pad with zeros
+    // for(let i = 0; i < xValues.length; i++) {
+    //   val2 = xValues[i]
+    //   idx = indexToCoordinates(i, imagesStrides)
+    //   idx = [idx[0] + pad, idx[1] + pad]
+    //   idx2 = coordinatesToIndex(idx, paddedStrides)
+    //   result[idx2] = val2
+    // }
+
+    // // top/bottom rows
+    // const topBotIdx = [...Array(imagesStrides[1]).keys()]
+    // const topCoords: number[][] = []
+    // const botCoords:number[][] = []
+    // topBotIdx.forEach(el => {
+    //   topCoords.push([0, el])
+    //   botCoords.push([imageRows - 1, el])
+    // })
+
+    // // left/right cols
+    // const leftRightIdx = [...Array((imagesStrides[0] / imagesStrides[1])).keys()]
+    // const leftCoords: number[][] = []
+    // const rightCoords: number[][] = []
+    // leftRightIdx.forEach(el => {
+    //   leftCoords.push([el, 0])
+    //   rightCoords.push([el, imagesStrides[1] - 1, ])
+    // })
+
+    // // need to get value of image at coordinate
+    // // convert it to index
+    // // if top row:
+    //     // keep column same, subtract 1 and 2 from row
+    // topCoords.forEach(el => {
+    //   let idx = coordinatesToIndex(el, imagesStrides)
+    //   let val = img[idx]
+    //   let c1 = [0, el[1]+2]
+    //   let c2 = [1, el[1]+2]
+    //   console.log('t')
+    //   console.log(c1)
+    //   console.log(c2)
+    //   let c1Idx = coordinatesToIndex(c1, paddedStrides)
+    //   let c2Idx = coordinatesToIndex(c2, paddedStrides)
+    //   console.log(c1Idx)
+    //   console.log(c2Idx)
+    //   console.log(`val ${val}`)
+    //   result[c1Idx] = val
+    //   result[c2Idx] = val
+    // })
+
+
+    // // if bottom row
+    //     // keep column same, add 1 and 2 to row
+    // botCoords.forEach(el => {
+    //   let idx = coordinatesToIndex(el, imagesStrides)
+    //   let val = img[idx]
+    //   let c1 = [imageRows+pad, el[1]+2]
+    //   let c2 = [imageRows+pad+1, el[1]+2]
+    //   console.log('b')
+    //   console.log(c1)
+    //   console.log(c2)
+    //   let c1Idx = coordinatesToIndex(c1, paddedStrides)
+    //   let c2Idx = coordinatesToIndex(c2, paddedStrides)
+    //   console.log(c1Idx)
+    //   console.log(c2Idx)
+    //   console.log(`val ${val}`)
+    //   result[c1Idx] = val
+    //   result[c2Idx] = val
+    // })
+    // // if left col
+    // leftCoords.forEach(el => {
+    //   let idx = coordinatesToIndex(el, imagesStrides)
+    //   let val = img[idx]
+    //   let c1 = [el[0]+2, 0]
+    //   let c2 = [el[0]+2, 1]
+    //   console.log('l')
+    //   console.log(c1)
+    //   console.log(c2)
+    //   let c1Idx = coordinatesToIndex(c1, paddedStrides)
+    //   let c2Idx = coordinatesToIndex(c2, paddedStrides)
+    //   console.log(c1Idx)
+    //   console.log(c2Idx)
+    //   console.log(`val ${val}`)
+    //   result[c1Idx] = val
+    //   result[c2Idx] = val
+    // })
+
+    //   //  keep row same subtract 1 and 2 from column
+
+    // // if right col
+    // rightCoords.forEach(el => {
+    //   let idx = coordinatesToIndex(el, imagesStrides)
+    //   let val = img[idx]
+    //   let c1 = [el[0]+2, imagesStrides[1] + 2]
+    //   let c2 = [el[0]+2, imagesStrides[1] + 3]
+    //   console.log('r')
+    //   console.log(c1)
+    //   console.log(c2)
+    //   let c1Idx = coordinatesToIndex(c1, paddedStrides)
+    //   let c2Idx = coordinatesToIndex(c2, paddedStrides)
+    //   console.log(c1Idx)
+    //   console.log(c2Idx)
+    //   console.log(`val ${val}`)
+    //   result[c1Idx] = val
+    //   result[c2Idx] = val
+    // })
 
