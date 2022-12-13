@@ -259,6 +259,7 @@ import {nonMaxSuppressionPadded} from './image/non_max_suppression_padded';
 import {nonMaxSuppressionPaddedAsync} from './image/non_max_suppression_padded_async';
 import {resizeBilinear} from './image/resize_bilinear';
 import {resizeNearestNeighbor} from './image/resize_nearest_neighbor';
+import {resizeBicubic} from './image/resize_bicubic';
 import {threshold} from './image/threshold';
 import {transform} from './image/transform';
 const image = {
@@ -266,6 +267,7 @@ const image = {
   grayscaleToRGB,
   resizeNearestNeighbor,
   resizeBilinear,
+  resizeBicubic,
   rotateWithOffset,
   cropAndResize,
   nonMaxSuppression,

@@ -728,6 +728,19 @@ export const ResizeBilinearGrad = 'ResizeBilinearGrad';
 export type ResizeBilinearGradInputs = Pick<NamedTensorInfoMap, 'images'|'dy'>;
 export type ResizeBilinearGradAttrs = ResizeBilinearAttrs;
 
+export const ResizeBicubic = 'ResizeBicubic';
+export type ResizeBicubicInputs = Pick<NamedTensorInfoMap, 'images'>;
+export interface ResizeBicubicAttrs {
+  alignCorners: boolean;
+  halfPixelCenters: boolean;
+  size: [number, number];
+}
+
+export const ResizeBicubicGrad = 'ResizeBicubicGrad';
+export type ResizeBicubicGradInputs =
+    Pick<NamedTensorInfoMap, 'images'|'dy'>;
+export type ResizeBicubicGradAttrs = ResizeBicubicAttrs;
+
 export const Relu6 = 'Relu6';
 export type Relu6Inputs = Pick<NamedTensorInfoMap, 'x'>;
 

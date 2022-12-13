@@ -14,22 +14,26 @@
  * limitations under the License.
  * =============================================================================
  */
-import {resizeBilinear} from '../../ops/image/resize_bilinear';
-import {getGlobalTensorClass, Tensor3D, Tensor4D} from '../../tensor';
-import {Rank} from '../../types';
+ import {resizeBilinear} from '../../ops/image/resize_bilinear';
+ import {getGlobalTensorClass, Tensor3D, Tensor4D} from '../../tensor';
+ import {Rank} from '../../types';
 
-declare module '../../tensor' {
-  interface Tensor<R extends Rank = Rank> {
-    resizeBilinear<T extends Tensor3D|Tensor4D>(
-        newShape2D: [number, number], alignCorners?: boolean,
-        halfPixelCenters?: boolean): T;
-  }
-}
+ declare module '../../tensor' {
+   interface Tensor<R extends Rank = Rank> {
+     resizeBilinear<T extends Tensor3D|Tensor4D>(
+         newShape2D: [number, number], alignCorners?: boolean,
+         halfPixelCenters?: boolean): T;
+   }
+ }
 
-getGlobalTensorClass().prototype.resizeBilinear =
-    function<T extends Tensor3D|Tensor4D>(
-        this: T, newShape2D: [number, number], alignCorners?: boolean,
-        halfPixelCenters?: boolean): T {
-  this.throwIfDisposed();
-  return resizeBilinear(this, newShape2D, alignCorners, halfPixelCenters);
-};
+ getGlobalTensorClass().prototype.resizeBilinear =
+     function<T extends Tensor3D|Tensor4D>(
+         this: T, newShape2D: [number, number], alignCorners?: boolean,
+         halfPixelCenters?: boolean): T {
+   this.throwIfDisposed();
+   return resizeBilinear(this, newShape2D, alignCorners, halfPixelCenters);
+ };
+
+
+
+
