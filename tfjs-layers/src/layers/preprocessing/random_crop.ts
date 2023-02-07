@@ -10,6 +10,8 @@
 
 import { BaseRandomLayerArgs, BaseRandomLayer } from '../../engine/base_random_layer';
 import { image, serialization, Tensor, tidy } from '@tensorflow/tfjs-core';
+import {Shape} from '../../keras_format/common';
+import { getExactlyOneTensor, getExactlyOneShape } from '../../utils/types_utils';
 
 export declare interface RandomWidthArgs extends BaseRandomLayerArgs {
   height: number;
@@ -24,8 +26,6 @@ export class RandomCrop extends BaseRandomLayer {
   private readonly height: number;
   private readonly width: number;
   private readonly seed?: number; // default null
-  private adjustedHeight: number;
-  private adjustedWidth: number;
 
   constructor(args: RandomWidthArgs) {
     super(args);
@@ -44,5 +44,11 @@ export class RandomCrop extends BaseRandomLayer {
     const baseConfig = super.getConfig();
     Object.assign(config, baseConfig);
     return config
+  }
+
+  override computeOutputShape(inputShape: Shape|Shape[]): Shape|Shape[] {
+    inputShape = getExactlyOneShape(inputShape);
+    const numChannels = inputShape[2];
+    return [this.height, this.width, numChannels];
   }
 }
