@@ -9,6 +9,7 @@
  */
 
 import { BaseRandomLayerArgs, BaseRandomLayer } from '../../engine/base_random_layer';
+import { image, serialization, Tensor, tidy } from '@tensorflow/tfjs-core';
 
 export declare interface RandomWidthArgs extends BaseRandomLayerArgs {
   height: number;
@@ -31,5 +32,17 @@ export class RandomCrop extends BaseRandomLayer {
     this.height = args.height;
     this.width = args.width;
     this.seed = args.seed;
+  }
+
+  override getConfig(): serialization.ConfigDict {
+    const config: serialization.ConfigDict = {
+      'height': this.height,
+      'width': this.width,
+      'seed': this.seed
+    };
+
+    const baseConfig = super.getConfig();
+    Object.assign(config, baseConfig);
+    return config
   }
 }
