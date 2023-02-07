@@ -11,7 +11,7 @@
 import { BaseRandomLayerArgs, BaseRandomLayer } from '../../engine/base_random_layer';
 import { image, serialization, Tensor, tidy } from '@tensorflow/tfjs-core';
 import {Shape} from '../../keras_format/common';
-import { getExactlyOneTensor, getExactlyOneShape } from '../../utils/types_utils';
+import { getExactlyOneShape } from '../../utils/types_utils';
 
 export declare interface RandomWidthArgs extends BaseRandomLayerArgs {
   height: number;
@@ -50,5 +50,14 @@ export class RandomCrop extends BaseRandomLayer {
     inputShape = getExactlyOneShape(inputShape);
     const numChannels = inputShape[2];
     return [this.height, this.width, numChannels];
+  }
+
+  randomCrop(inputs: Tensor3D | Tensor4D, hBuffer: number, wBuffer: number,
+    height: number, width: number, inputHeight: number,
+    inputWidth: number, dtype: DataType): Tensor | Tensor[] {
+
+    return tidy(() => {
+      
+    });
   }
 }
