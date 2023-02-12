@@ -57,7 +57,8 @@ export class RandomCrop extends BaseRandomLayer {
     inputWidth: number, dtype: DataType): Tensor | Tensor[] {
 
     return tidy(() => {
-      
+
+      return inputs; // temp return to get rid of errors
     });
   }
 }
