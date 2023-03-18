@@ -1,6 +1,4 @@
-/**
- * @license
- * Copyright 2023 Google LLC.
+/* Copyright 2023 Google LLC.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,8 +10,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * =============================================================================
- */
+ * ===========================================================================*/
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -68,9 +65,9 @@ void AvgPool3DGrad(int dy_id, int dx_id, int batch_size, int channel_size,
           .effective_filter_depth = effective_filter_depth,
           .effective_filter_height = effective_filter_height,
           .effective_filter_width = effective_filter_width,
-          .pad_front = effective_filter_depth - 1 - pad_front,
-          .pad_top = effective_filter_height - 1 - pad_top,
-          .pad_left = effective_filter_width - 1 - pad_left,
+          .pad_front = pad_front,
+          .pad_top = pad_top,
+          .pad_left = pad_left,
       },
       /*pixel_mask=*/
       [avg_multiplier = 1.0f / (static_cast<float>(filter_depth) *

@@ -10,17 +10,22 @@
 
 import { image, Rank, serialization, Tensor, tidy } from '@tensorflow/tfjs-core';
 import { getExactlyOneTensor, getExactlyOneShape } from '../../utils/types_utils';
-import {Shape} from '../../keras_format/common';
+import { Shape } from '../../keras_format/common';
 import { Kwargs } from '../../types';
 import { ValueError } from '../../errors';
 import { BaseRandomLayerArgs, BaseRandomLayer } from '../../engine/base_random_layer';
+import { randomUniform } from '@tensorflow/tfjs-core';
 
 export declare interface RandomWidthArgs extends BaseRandomLayerArgs {
    factor: number | [number, number];
    interpolation?: InterpolationType; // default = 'bilinear';
-   seed?: number;// default = false;
-   autoVectorize?:boolean;
+   seed?: number; // default = null;
+   autoVectorize?: boolean;
 }
+
+const INTERPOLATION_KEYS = ['bilinear', 'nearest'] as const;
+export const INTERPOLATION_METHODS = new Set(INTERPOLATION_KEYS);
+type InterpolationType = typeof INTERPOLATION_KEYS[number];
 
 /**
  * Preprocessing Layer with randomly varies image during training
@@ -39,25 +44,22 @@ export declare interface RandomWidthArgs extends BaseRandomLayerArgs {
  *
  */
 
-const INTERPOLATION_KEYS = ['bilinear', 'nearest'] as const;
-export const INTERPOLATION_METHODS = new Set(INTERPOLATION_KEYS);
-type InterpolationType = typeof INTERPOLATION_KEYS[number];
-
 export class RandomWidth extends BaseRandomLayer {
   /** @nocollapse */
   static override className = 'RandomWidth';
   private readonly factor: number | [number, number];
   private readonly interpolation?: InterpolationType;  // defualt = 'bilinear
-  private readonly seed?: number; // default null
   private widthLower: number;
   private widthUpper: number;
   private imgHeight: number;
   private adjustedWidth: number;
-  private widthFactor: Tensor<Rank.R3>|Tensor<Rank.R4>;
+  private widthFactor: Tensor<Rank.R1>;
 
   constructor(args: RandomWidthArgs) {
     super(args);
-    this.factor = args.factor;
+    const {factor, interpolation = 'bilinear'} = args;
+
+    this.factor = factor;
 
     if (Array.isArray(this.factor) && this.factor.length === 2) {
       this.widthLower = this.factor[0];
@@ -84,21 +86,13 @@ export class RandomWidth extends BaseRandomLayer {
       `);
     }
 
-    if(args.seed) {
-      this.seed = args.seed;
-    } else {
-      this.seed = null;
-    }
-
-    if (args.interpolation) {
-      if (INTERPOLATION_METHODS.has(args.interpolation)) {
-        this.interpolation = args.interpolation;
+    if (interpolation) {
+      if (INTERPOLATION_METHODS.has(interpolation)) {
+        this.interpolation = interpolation;
       } else {
         throw new ValueError(`Invalid interpolation parameter: ${
-            args.interpolation} is not implemented`);
+            interpolation} is not implemented`);
       }
-    } else {
-      this.interpolation = 'bilinear';
     }
   }
 
@@ -106,7 +100,6 @@ export class RandomWidth extends BaseRandomLayer {
     const config: serialization.ConfigDict = {
       'factor': this.factor,
       'interpolation': this.interpolation,
-      'seed': this.seed,
     };
 
     const baseConfig = super.getConfig();
@@ -124,35 +117,29 @@ export class RandomWidth extends BaseRandomLayer {
     kwargs: Kwargs): Tensor[]|Tensor {
 
     return tidy(() => {
-        const input = getExactlyOneTensor(inputs);
-        const inputShape = input.shape;
-        this.imgHeight = inputShape[inputShape.length - 3];
-        const imgWidth = inputShape[inputShape.length - 2];
+      const input = getExactlyOneTensor(inputs);
+      this.imgHeight = input.shape[input.shape.length - 3];
+      const imgWidth = input.shape[input.shape.length - 2];
 
-        const randomUniform = this.setRNGType('uniform');
+      this.widthFactor = randomUniform([1],
+        (1.0 + this.widthLower), (1.0 + this.widthUpper),
+        'float32', this.randomGenerator.next()
+      );
 
-        if (this.seed !== null) {
-          this.widthFactor = randomUniform([1],
-            (1.0 + this.widthLower), (1.0 + this.widthUpper),
-            'float32', this.seed
-          );
-        } else {
-          this.widthFactor = randomUniform([1],
-            (1.0 + this.widthLower), (1.0 + this.widthUpper)
-          );
-        }
-        this.adjustedWidth = this.widthFactor.dataSync()[0] * imgWidth;
-        this.adjustedWidth = Math.round(this.adjustedWidth);
-        const size: [number, number] = [this.imgHeight, this.adjustedWidth];
-        if (this.interpolation === 'bilinear') {
+      this.adjustedWidth = this.widthFactor.dataSync()[0] * imgWidth;
+      this.adjustedWidth = Math.round(this.adjustedWidth);
+
+      const size:[number, number] = [this.imgHeight, this.adjustedWidth];
+
+      switch (this.interpolation) {
+        case 'bilinear':
           return image.resizeBilinear(inputs, size);
-        } else if (this.interpolation === 'nearest') {
-          const output = image.resizeNearestNeighbor(inputs, size);
-          return output;
-        } else {
+        case 'nearest':
+          return image.resizeNearestNeighbor(inputs, size);
+        default:
           throw new Error(`Interpolation is ${this.interpolation}
           but only ${[...INTERPOLATION_METHODS]} are supported`);
-        }
+      }
     });
   }
 }

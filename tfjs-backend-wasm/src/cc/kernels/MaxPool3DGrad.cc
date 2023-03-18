@@ -1,6 +1,4 @@
-/**
- * @license
- * Copyright 2023 Google LLC.
+/* Copyright 2023 Google LLC.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,8 +10,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * =============================================================================
- */
+ * ===========================================================================*/
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -88,9 +85,6 @@ void MaxPool3DGrad(int x_id, int dy_id, int dx_id, int batch_size,
       /*filter_aggregate=*/
       [](const std::pair<float, int>& data) { return data.second; });
 
-  pool3d_info.pad_front = effective_filter_depth - 1 - pad_front;
-  pool3d_info.pad_top = effective_filter_height - 1 - pad_top;
-  pool3d_info.pad_left = effective_filter_width - 1 - pad_left;
   NDHWCPool3DGradImpl(
       dy_info.f32(), dx_info.f32_write(), pool3d_info,
       /*pixel_mask=*/

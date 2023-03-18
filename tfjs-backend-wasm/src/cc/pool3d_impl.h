@@ -1,4 +1,4 @@
-/* Copyright 2023 Google LLC. All Rights Reserved.
+/* Copyright 2023 Google LLC.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 #endif
 
 #include <cstddef>
+#include "tfjs-backend-wasm/src/cc/shape.h"
 
 namespace tfjs::wasm {
 
@@ -56,20 +57,23 @@ struct NDHWCPool3DInfo {
   int pad_top;
   int pad_left;
 
+  inline Shape<int, 5> in_shape() const {
+    return Shape<int, 5>(
+        {batch_size, in_depth, in_height, in_width, channel_size});
+  }
+  inline Shape<int, 5> out_shape() const {
+    return Shape<int, 5>(
+        {batch_size, out_depth, out_height, out_width, channel_size});
+  }
+
   inline int in_offset(int b, int d, int h, int w, int c) const {
-    return c +
-           (w + (h + (d + b * in_depth) * in_height) * in_width) * channel_size;
+    return in_shape().offset({b, d, h, w, c});
   }
   inline int out_offset(int b, int d, int h, int w, int c) const {
-    return c + (w + (h + (d + b * out_depth) * out_height) * out_width) *
-                   channel_size;
+    return out_shape().offset({b, d, h, w, c});
   }
-  inline int in_size() const {
-    return batch_size * in_depth * in_height * in_width * channel_size;
-  }
-  inline int out_size() const {
-    return batch_size * out_depth * out_height * out_width * channel_size;
-  }
+  inline int int_size() const { return in_shape().size(); }
+  inline int out_size() const { return out_shape().size(); }
 };
 template <typename IN, typename OUT, typename FI, typename FAP, typename FAG>
 inline void NDHWCPool3DImpl(const IN* x_buf, OUT* out_buf,
@@ -124,8 +128,13 @@ inline void NDHWCPool3DImpl(const IN* x_buf, OUT* out_buf,
 
 template <typename DY, typename DX, typename FM>
 inline void NDHWCPool3DGradImpl(const DY* dy_buf, DX* dx_buf,
-                                const NDHWCPool3DInfo& info,
+                                const NDHWCPool3DInfo& forward_info,
                                 const FM& pixel_mask) {
+  auto info = forward_info;
+  info.pad_front = info.effective_filter_depth - 1 - info.pad_front;
+  info.pad_top = info.effective_filter_height - 1 - info.pad_top;
+  info.pad_left = info.effective_filter_width - 1 - info.pad_left;
+
   for (int batch = 0; batch < info.batch_size; ++batch) {
     for (int channel = 0; channel < info.channel_size; ++channel) {
       for (int dx_depth = 0; dx_depth < info.in_depth; ++dx_depth) {

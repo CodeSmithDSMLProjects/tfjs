@@ -89,18 +89,8 @@ const TEST_FILTERS: TestFilter[] = [
     ]
   },
   {include: 'cropAndResize'},
-  {
-    include: 'resizeBilinear',
-    excludes: [
-      'gradients',  // Not yet implemented.
-    ]
-  },
-  {
-    include: 'resizeNearestNeighbor',
-    excludes: [
-      'gradients',  // Not yet implemented.
-    ]
-  },
+  {include: 'resizeBilinear'},
+  {include: 'resizeNearestNeighbor'},
   {
     include: 'matmul ',
     excludes: [
@@ -246,14 +236,10 @@ const TEST_FILTERS: TestFilter[] = [
   },
   {include: 'addN'},
   {include: 'nonMaxSuppression'},
-  {include: 'argmax', excludes: ['gradient']},
+  {include: 'argmax '},
+  {include: 'argmin '},
   {include: 'exp '},
-  {
-    include: 'elu ',
-    excludes: [
-      'selu'  // Not yet implemented.
-    ]
-  },
+  {include: 'elu '},
   {include: 'unstack'},
   {
     include: 'minimum',
@@ -413,6 +399,19 @@ const TEST_FILTERS: TestFilter[] = [
   {include: 'dilation2d '},
   {include: 'localResponseNormalization '},
   {include: 'log1p '},
+  {include: 'atan2 '},
+  {include: 'atanh '},
+  {include: 'isInf '},
+  {include: 'isFinite '},
+  {include: 'sign '},
+  {include: 'selu '},
+  {include: 'softplus '},
+  {include: 'linspace'},
+  {include: 'bincount'},
+  {include: 'expm1 '},
+  {include: 'multinomial'},
+  {include: 'unique'},
+  {include: 'conv3d'},
 ];
 
 const customInclude = (testName: string) => {
